@@ -1,28 +1,30 @@
-# Arduino MCP9800 Temperature Sensor Library 1.1.0
-https://github.com/JChristensen/MCP9800  
+# ~~Arduino~~ Mbed OS MCP9800 Temperature Sensor Library 1.1.0
+~~https://github.com/JChristensen/MCP9800~~ 
+https://github.com/ATM-HSW/MCP9800.git
 README file  
 Jack Christensen Mar 2014
+Olaf Hagendorf 05.2021
 
 ![CC BY-SA](http://mirrors.creativecommons.org/presskit/buttons/80x15/png/by-sa.png)
 
 ## Introduction
-**Arduino Library for Microchip MCP9800/1/2/3 2-Wire High-Accuracy Temperature Sensors**
+**~~Arduino~~ Mbed OS Library for Microchip MCP9800/1/2/3 2-Wire High-Accuracy Temperature Sensors**
 
 A lightweight implementation that exposes all functionality of the [Microchip MCP9800/1/2/3 sensors](http://www.microchip.com/wwwproducts/Devices.aspx?dDocName=en020949). Temperatures are dealt with in the integer domain to avoid the code size and runtime overhead associated with floating-point. Still, it is straightforward to perform the necessary conversions should the user wish to work in floating-point format.
 
-Temperatures read from the device's registers are returned as °C\*16. (If the device resolution is set to less than 12 bits, the corresponding lower order bits are simply returned as zero.) Temperatures can alternately be read as °F\*10.
+Temperatures read from the device's registers are returned as °C\*10000 to support the full resolution. (If the device resolution is set to less than 12 bits, the corresponding lower order bits are simply returned as zero.)
 
-When writing the Hysteresis and Limit-Set registers, the value must be given as °C*2, which corresponds to the internal representation in these registers.
+When writing the Hysteresis and Limit-Set registers, the value must be given as °C*10000.
 
 Bit masks for the control register are provided in the **MCP9800.h** file.     
 
-"Arduino Library for Microchip MCP9800/1/2/3" by Jack Christensen is licensed under [CC BY-SA 4.0](http://creativecommons.org/licenses/by-sa/4.0/).
+"~~Arduino~~ Mbed OS Library for Microchip MCP9800/1/2/3" by Jack Christensen, Olaf Hagendorf is licensed under [CC BY-SA 4.0](http://creativecommons.org/licenses/by-sa/4.0/).
 
 
 ## Examples
 The following example sketch is included with the **MCP9800** library:
 
-- **MCP9800_EX1:** Demonstrates basic reading of ambient temperature in Celsius and Fahrenheit, conversion to floating-point, changing device options via the Cofiguration register, and changing the Limit-Set and Hysteresis registers.  
+- **MCP9800_EX1:** Demonstrates basic reading of ambient temperature in Celsius, conversion to floating-point, changing device options via the Cofiguration register, and changing the Limit-Set and Hysteresis registers.  
 
 ## Enumeration
 

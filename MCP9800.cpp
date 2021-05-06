@@ -26,79 +26,75 @@
  * http://creativecommons.org/licenses/by-sa/4.0/                              *
  *-----------------------------------------------------------------------------*/
 
+#include "mbed.h"
 #include <MCP9800.h>
 
-// instantiate a temperature sensor object given the least three significant
-// bits (A2:0) of its I2C address (0-7)
-MCP9800::MCP9800(uint8_t LS_ADDR_BITS)
-{
-    m_devAddr = MCP9800_BASE_ADDR + (LS_ADDR_BITS & 7);
+// instantiate a temperature sensor object
+MCP9800::MCP9800() {
 }
 
-void MCP9800::begin()
-{
-    Wire.begin();
+// given the least three significant bits (A2:0) of its I2C address (0-7)
+int MCP9800::init(I2C *i2c, uint8_t devAddr) {
+  m_devAddr = devAddr;
+  this->i2c = i2c;
+  
+  return 0;
 }
 
 // read one of the sensor's three temperature registers.
 // returns the temperature as an integer which is °C times 16.
-int MCP9800::readTempC16(MCP9800_REGS_t reg)
-{
-    Wire.beginTransmission(m_devAddr);
-    Wire.write(reg);
-    Wire.endTransmission();
-    
-    Wire.requestFrom(m_devAddr, (uint8_t)2);
-    int8_t msb = Wire.read();
-    uint8_t lsb = Wire.read();
-    return (msb << 4) + (lsb >> 4);
+int32_t MCP9800::readTemp(MCP9800_REGS_t reg) {
+  int ret;
+
+  this->cmd[0] = reg;
+  ret = this->i2c->write(m_devAddr, (const char*)cmd, 1);
+
+  cmd[0] = 0;
+  cmd[1] = 0;
+  ret = this->i2c->read(m_devAddr, (char*)cmd, 2);
+  
+  return ((cmd[0]&0x80)?-1:1) * (((cmd[0]&0x7f) * 10000) + ((cmd[1]&0x80)?5000:0) + ((cmd[1]&0x40)?2500:0) + ((cmd[1]&0x20)?1250:0) + ((cmd[1]&0x10)?625:0));
 }
 
-// read one of the sensor's three temperature registers.
-// returns the temperature as an integer which is °F times 10.
-int MCP9800::readTempF10(MCP9800_REGS_t reg)
-{
-    long tF160 = (long)readTempC16(reg) * 18L;
-    int tF10 = tF160 / 16;
-    if ( (tF160 & 15) >= 8) ++tF10;    // round up to the next tenth if needed
-    tF10 += 320;                       // add in the offset (*10)
-    return tF10;
-}
 
-void MCP9800::writeTempC2(MCP9800_REGS_t reg, int value)
-{
-    union intByte_t
-    {
-        int i;
-        byte b[2];
-    } t;
+
+int MCP9800::writeTempx(MCP9800_REGS_t reg, int32_t value) {
     
-    if (reg > AMBIENT) {    // ambient temp reg is read-only
-        t.i = value << 7;
-        Wire.beginTransmission(m_devAddr);
-        Wire.write(reg);
-        Wire.write(t.b[1]);
-        Wire.write(t.b[0]);
-        Wire.endTransmission();
-    }
+  if (reg > AMBIENT) {    // ambient temp reg is read-only
+    this->cmd[0] = reg;
+    this->cmd[1] = (value/10000)&0xff;
+    this->cmd[2] = (value-(value/10000)*10000)>=50000?0x80:0x00;
+    return this->i2c->write(m_devAddr, (const char*)cmd, 3);
+  }
+  
+  return 0;
 }
 
 // read the sensor's configuration register
-uint8_t MCP9800::readConfig()
-{
-    Wire.beginTransmission(m_devAddr);
-    Wire.write(CONFIG_REG);
-    Wire.endTransmission();
-    
-    Wire.requestFrom(m_devAddr, (uint8_t)1);
-    return Wire.read();
+uint8_t MCP9800::readConfig(MCP9800_config *cfg) {
+  int ret;
+
+  this->cmd[0] = CONFIG_REG;
+  ret = this->i2c->write(m_devAddr, (const char*)cmd, 1);
+
+  cmd[0] = 0;
+  ret = this->i2c->read(m_devAddr, (char*)cmd, 1);
+  
+  cfg->ONE_SHOT       = cmd[0]&ONE_SHOT?true:false;
+  cfg->ADC_RESOLUTION = (cmd[0]&0x60)>>5;
+  cfg->FAULT_QUEUE    = (cmd[0]&0x18)>>3;
+  cfg->ALERT_POLARITY = cmd[0]&ALERT_POLARITY_HIGH?true:false;
+  cfg->INT_MODE       = cmd[0]&INTERRUPT_MODE?true:false;
+  cfg->SHUTDOWN       = cmd[0]&SHUTDOWN?true:false;
+
+  return this->cmd[0];
 }
 
 // write the sensor's configuration register
-void MCP9800::writeConfig(uint8_t value)
-{
-    Wire.beginTransmission(m_devAddr);
-    Wire.write(CONFIG_REG);
-    Wire.write(value);
-    Wire.endTransmission();
+int MCP9800::writeConfig(uint8_t value) {
+  int ret;
+
+  this->cmd[0] = CONFIG_REG;
+  this->cmd[1] = value;
+  return this->i2c->write(m_devAddr, (const char*)cmd, 2);
 }
