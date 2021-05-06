@@ -56,6 +56,9 @@ int32_t MCP9800::readTemp(MCP9800_REGS_t reg) {
   return ((cmd[0]&0x80)?-1:1) * (((cmd[0]&0x7f) * 10000) + ((cmd[1]&0x80)?5000:0) + ((cmd[1]&0x40)?2500:0) + ((cmd[1]&0x20)?1250:0) + ((cmd[1]&0x10)?625:0));
 }
 
+float MCP9800::readTempF(MCP9800_REGS_t reg) {
+  return readTemp(reg)/10000.0;
+}
 
 
 int MCP9800::writeTempx(MCP9800_REGS_t reg, int32_t value) {
@@ -63,12 +66,17 @@ int MCP9800::writeTempx(MCP9800_REGS_t reg, int32_t value) {
   if (reg > AMBIENT) {    // ambient temp reg is read-only
     this->cmd[0] = reg;
     this->cmd[1] = (value/10000)&0xff;
-    this->cmd[2] = (value-(value/10000)*10000)>=50000?0x80:0x00;
+    this->cmd[2] = (value-(value/10000)*10000)>=5000?0x80:0x00;
     return this->i2c->write(m_devAddr, (const char*)cmd, 3);
   }
   
   return 0;
 }
+
+int MCP9800::writeTempx(MCP9800_REGS_t reg, float value) {
+  return writeTempx(reg, (int32_t)(value*10000));
+}
+
 
 // read the sensor's configuration register
 uint8_t MCP9800::readConfig(MCP9800_config *cfg) {

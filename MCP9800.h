@@ -64,7 +64,9 @@ class MCP9800 {
     MCP9800();
     int init(I2C *i2c, uint8_t devAddr);
     int32_t readTemp(MCP9800_REGS_t reg);
+    float readTempF(MCP9800_REGS_t reg);
     int writeTempx(MCP9800_REGS_t reg, int value);
+    int writeTempx(MCP9800_REGS_t reg, float value);
     uint8_t readConfig(MCP9800_config *cfg);
     int writeConfig(uint8_t value);
 
