@@ -1,8 +1,8 @@
 # ~~Arduino~~ Mbed OS MCP9800 Temperature Sensor Library 1.1.0
-~~https://github.com/JChristensen/MCP9800~~ 
-https://github.com/ATM-HSW/MCP9800.git
+~~https://github.com/JChristensen/MCP9800~~  
+https://github.com/ATM-HSW/MCP9800  
 README file  
-Jack Christensen Mar 2014
+Jack Christensen Mar 2014  
 Olaf Hagendorf 05.2021
 
 ![CC BY-SA](http://mirrors.creativecommons.org/presskit/buttons/80x15/png/by-sa.png)
