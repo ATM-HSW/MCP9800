@@ -72,8 +72,8 @@ class MCP9800 {
 
   private:
     uint8_t m_devAddr;
-    I2C *i2c;
-    uint8_t cmd[4];
+    I2C *m_i2c;
+    uint8_t m_cmd[4];
 };
 
 #endif
